@@ -1,0 +1,1 @@
+SELECT * FROM Movie_Rankings.movie_ratings;

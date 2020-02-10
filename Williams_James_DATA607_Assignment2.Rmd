@@ -1,0 +1,63 @@
+---
+title: 'DATA607 Assignment 2: SQL and R'
+author: "James Williams"
+output:
+  pdf_document: default
+  html_document:
+    highlight: pygments
+    theme: cerulean
+---
+## STEP 1: Load Movie_Rankings.sql into R dataframe
+
+Data is stored here: https://github.com/jambawilliams/Movie_Rankings
+
+There are some of the references I used:
+https://www.r-bloggers.com/accessing-mysql-through-r/ 
+https://cran.r-project.org/web/packages/RMySQL/RMySQL.pdf
+http://www.sthda.com/english/wiki/ggplot2-scatter-plots-quick-start-guide-r-software-and-data-visualization
+
+Connect R to MySQL and pull in the Movie Ratings table.
+
+```{r load-data, eval=TRUE}
+library(RMySQL)
+mydb <-dbConnect(MySQL(), user='root', password='Sourpie7!', dbname='Assignment2', host='localhost')
+rs <- dbSendQuery(mydb, "select * from Movie_Rankings")
+data <- fetch(rs, n=-1)
+```
+
+## STEP 2: Explore Dataframe
+
+Display the Movie Ratings table.
+
+```{r display-data, eval=TRUE}
+data
+```
+
+
+## STEP 3: Replace Null Values
+
+Null values replaced with 0 since no ranking was orignally assigned.  This will allow us to pull summary statistics later.
+
+```{r replace-null, eval=TRUE}
+dbSendQuery(mydb, "UPDATE Movie_Rankings SET Snow_White = 0 where Snow_White is null")
+dbSendQuery(mydb, "UPDATE Movie_Rankings SET Aladdin = 0 where Aladdin is null")
+rs <- dbSendQuery(mydb, "select * from Movie_Rankings")
+data_conditioned <- fetch(rs, n=-1)
+data_conditioned
+```
+
+
+## STEP 4: Summary Statistics
+
+```{r summary-statistics, eval=TRUE}
+summary(data_conditioned)
+```
+
+
+## STEP 5: Graph Data Distribution
+
+```{r box-plot, eval=TRUE}
+library(reshape2)
+library(ggplot2)
+ggplot(melt(data_conditioned), aes(variable, value)) + geom_boxplot()
+```
